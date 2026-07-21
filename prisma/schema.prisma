@@ -1,0 +1,181 @@
+// Prisma Schema for Multi-language AI Adaptive Language Learning Platform
+// MVP v0.1 - English only
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model User {
+  id                      String              @id @default(uuid())
+  email                   String?             @unique
+  phone                   String?             @unique
+  passwordHash            String
+  nickname                String?
+  avatar                  String?
+  currentLevel            String              @default("A1")
+  hasCompletedDiagnostic  Boolean             @default(false)
+  createdAt               DateTime            @default(now())
+  lastLoginAt             DateTime?
+  updatedAt               DateTime            @updatedAt
+
+  // 关系
+  diagnosticResults       DiagnosticResult[]
+  learningPaths           LearningPath[]
+  practiceSessions        PracticeSession[]
+  userStatistics          UserStatistics[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([currentLevel])
+  @@map("users")
+}
+
+// 诊断结果表
+model DiagnosticResult {
+  id              String    @id @default(uuid())
+  userId          String
+  overallScore    Float?
+  speakingScore   Float?
+  listeningScore  Float?
+  readingScore    Float?
+  writingScore    Float?
+  vocabularyScore Float?
+  grammarScore    Float?
+  cefrLevel       String?
+  taskResults     Json?
+  completedAt     DateTime  @default(now())
+
+  // 关系
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([cefrLevel])
+  @@map("diagnostic_results")
+}
+
+// 学习路径表
+model LearningPath {
+  id            String      @id @default(uuid())
+  userId        String      @unique
+  progress      Float       @default(0)
+  currentLevel  String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // 关系
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodes         PathNode[]
+
+  @@index([userId])
+  @@map("learning_paths")
+}
+
+// 路径节点表
+model PathNode {
+  id                String      @id @default(uuid())
+  pathId            String
+  nodeType          String      // vocabulary, dialogue, shadowing, grammar
+  title             String
+  description       String?
+  status            String      @default("locked") // locked, available, in_progress, completed
+  difficulty        String      @default("medium") // easy, medium, hard
+  estimatedMinutes  Int         @default(15)
+  score             Float?
+  completedAt       DateTime?
+  order             Int
+  createdAt         DateTime    @default(now())
+
+  // 关系
+  path              LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  practiceSessions  PracticeSession[]
+
+  @@index([pathId])
+  @@index([status])
+  @@map("path_nodes")
+}
+
+// 练习会话表
+model PracticeSession {
+  id          String              @id @default(uuid())
+  userId      String
+  nodeId      String?
+  sessionType String              // dialogue, shadowing
+  duration    Int                 @default(0)
+  score       Float?
+  details     Json?
+  startedAt   DateTime            @default(now())
+  endedAt     DateTime?
+
+  // 关系
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  node            PathNode?           @relation(fields: [nodeId], references: [id], onDelete: SetNull)
+  dialogueMessages DialogueMessage[]
+  shadowingAttempts ShadowingAttempt[]
+
+  @@index([userId])
+  @@index([nodeId])
+  @@index([sessionType])
+  @@map("practice_sessions")
+}
+
+// 对话消息表
+model DialogueMessage {
+  id          String    @id @default(uuid())
+  sessionId   String
+  speaker     String    // user, ai
+  content     String
+  audioUrl    String?
+  feedback    Json?
+  timestamp   DateTime  @default(now())
+
+  // 关系
+  session     PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("dialogue_messages")
+}
+
+// 跟读尝试表
+model ShadowingAttempt {
+  id              String    @id @default(uuid())
+  sessionId       String
+  sentenceId      String
+  targetText      String
+  userTranscript  String?
+  overallScore    Float?
+  errorDetails    Json?
+  attemptedAt     DateTime  @default(now())
+
+  // 关系
+  session         PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("shadowing_attempts")
+}
+
+// 用户统计表
+model UserStatistics {
+  id              String    @id @default(uuid())
+  userId          String
+  period          String    // week, month, all
+  totalMinutes    Int       @default(0)
+  totalSessions   Int       @default(0)
+  totalRounds     Int       @default(0)
+  averageScore    Float     @default(0)
+  dailyData       Json?
+  skillTrends     Json?
+  updatedAt       DateTime  @updatedAt
+
+  // 关系
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period])
+  @@index([userId])
+  @@map("user_statistics")
+}
