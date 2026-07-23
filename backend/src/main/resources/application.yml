@@ -1,0 +1,42 @@
+server:
+  port: 8080
+  error:
+    # 生产环境绝不向前端泄露堆栈与异常类名，避免信息泄漏
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 敏感信息全部走环境变量，禁止明文入库（本地默认值仅用于开发）
+    url: ${BOOK_DB_URL:jdbc:mysql://localhost:3306/book_cycle?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${BOOK_DB_USER:root}
+    password: ${BOOK_DB_PASSWORD:0428}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath:mapper/*.xml
+
+jwt:
+  # JWT 秘钥同样外部化，生产环境务必通过环境变量注入高强度随机值
+  secret: ${JWT_SECRET:bookcycle2024secretkeyforjwttoken12345678901234567890}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+upload:
+  path: uploads
+  base-url: /uploads

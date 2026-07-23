@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 书本背景 -->
+  <rect x="8" y="16" width="48" height="36" rx="2" fill="#409eff" />
+  
+  <!-- 书页 -->
+  <path d="M8 16 L32 28 L32 16 Z" fill="#66b3ff" />
+  <path d="M6 20 L30 30 L30 20 Z" fill="#80c0ff" />
+  
+  <!-- 书本细节 -->
+  <line x1="32" y1="16" x2="32" y2="52" stroke="#2677cc" stroke-width="2" />
+  <line x1="8" y1="30" x2="28" y2="40" stroke="#66b3ff" stroke-width="1" />
+  <line x1="8" y1="36" x2="26" y2="44" stroke="#66b3ff" stroke-width="1" />
+  
+  <!-- 循环箭头 -->
+  <path d="M52 32 A12 12 0 0 1 52 56 A12 12 0 0 1 40 48" fill="none" stroke="#67c23a" stroke-width="3" stroke-linecap="round" />
+  <path d="M40 48 L44 44 L36 36" fill="none" stroke="#67c23a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- 装饰点 -->
+  <circle cx="52" cy="32" r="3" fill="#67c23a" />
+</svg>

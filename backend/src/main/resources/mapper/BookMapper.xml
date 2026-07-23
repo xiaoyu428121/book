@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bookcycle.backend.mapper.BookMapper">
+
+    <select id="findBookPage" resultType="com.bookcycle.backend.entity.Book">
+        SELECT * FROM book
+        <where>
+            <!-- ✅ 增加status筛选 -->
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR isbn LIKE CONCAT('%', #{keyword}, '%') 
+                     OR author LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>
